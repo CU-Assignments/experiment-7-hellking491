@@ -1,0 +1,66 @@
+import java.sql.*;
+import java.util.Scanner;
+class Student {
+    int StudentID;
+    String Name;
+    String Department;
+    double Marks;
+}
+
+class StudentController {
+    private Connection con;
+    
+    public StudentController() throws SQLException {
+        con = DriverManager.getConnection("jdbc:mysql://localhost:3306/your_database", "your_username", "your_password");
+    }
+    
+    public void addStudent(Student student) throws SQLException {
+        String query = "INSERT INTO Student VALUES (?, ?, ?, ?)";
+        try (PreparedStatement pst = con.prepareStatement(query)) {
+            pst.setInt(1, student.StudentID);
+            pst.setString(2, student.Name);
+            pst.setString(3, student.Department);
+            pst.setDouble(4, student.Marks);
+            pst.executeUpdate();
+        }
+    }
+    
+    public void viewStudents() throws SQLException {
+        String query = "SELECT * FROM Student";
+        try (Statement stmt = con.createStatement(); ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                System.out.println(rs.getInt("StudentID") + " " + rs.getString("Name") + " " + rs.getString("Department") + " " + rs.getDouble("Marks"));
+            }
+        }
+    }
+}
+
+public class StudentApp {
+    public static void main(String[] args) throws SQLException {
+        StudentController controller = new StudentController();
+        Scanner scanner = new Scanner(System.in);
+        
+        while (true) {
+            System.out.println("1. Add Student\n2. View Students\n3. Exit");
+            int choice = scanner.nextInt();
+            
+            switch (choice) {
+                case 1:
+                    System.out.println("Enter StudentID, Name, Department, Marks:");
+                    Student student = new Student();
+                    student.StudentID = scanner.nextInt();
+                    student.Name = scanner.next();
+                    student.Department = scanner.next();
+                    student.Marks = scanner.nextDouble();
+                    controller.addStudent(student);
+                    System.out.println("Student Added Successfully!");
+                    break;
+                case 2:
+                    controller.viewStudents();
+                    break;
+                case 3:
+                    System.exit(0);
+            }
+        }
+    }
+}
